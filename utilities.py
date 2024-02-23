@@ -75,7 +75,7 @@ def raster_scan_llh_2d(
     Return:
         par1_mesh: A 2D mesh of par1 values.
         par2_mesh: A 2D mesh of par2 values.
-        llh_pdf_mesh: The maximum log-likelihood.
+        llh_pdf_mesh: A 2D mesh of log-likelihood values.
         max_llh_par1: Maximum likelihood estimate of par1.
         max_llh_par2: Maximum likelihood estimate of par2.
     """
