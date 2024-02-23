@@ -1,3 +1,5 @@
+"""General functions useful for solving problems in the course."""
+
 import numpy as np
 from typing import Callable
 from numpy.typing import NDArray
@@ -11,12 +13,12 @@ def get_normalization_1d_pdf(
     upper: float,
 ) -> Callable[..., float]:
     """Get the function that normalizes a PDF.
-    
+
     Args:
         pdf: The non-normalized function we want to use as a PDF.
         lower: Lower bound on the range of the pdf.
         upper: Upper bound on the range of the pdf.
-    
+
     Return:
         norm_func: Function for calculating the normalization constant.
     """
@@ -40,7 +42,7 @@ def normalize_pdf(
         pdf: The non-normalized function we want to use as a PDF.
         lower: Lower bound on the range of the PDF.
         upper: Upper bound on the range of the PDF.
-    
+
     Return:
         normalized_pdf: Function for computing the normalized PDF.
     """
@@ -51,6 +53,7 @@ def normalize_pdf(
         return norm(*args) * pdf(*args)
 
     return normalized_pdf
+
 
 def raster_scan_llh_2d(
     data: NDArray,
@@ -68,7 +71,7 @@ def raster_scan_llh_2d(
         par1_range: The range over which we scan for the first parameter.
         par2_range: The range over which we scan for the first parameter.
         N: Number of values to scan over for each parameter.
-    
+
     Return:
         par1_mesh: A 2D mesh of par1 values.
         par2_mesh: A 2D mesh of par2 values.
