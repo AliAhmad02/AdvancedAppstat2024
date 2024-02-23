@@ -1,3 +1,4 @@
+import numpy as np
 from typing import Callable
 from numpy.typing import NDArray
 import inspect
@@ -50,3 +51,41 @@ def normalize_pdf(
         return norm(*args) * pdf(*args)
 
     return normalized_pdf
+
+def raster_scan_llh_2d(
+    data: NDArray,
+    pdf: Callable[..., NDArray],
+    par1_range: tuple[float, float],
+    par2_range: tuple[float, float],
+    N: int,
+) -> tuple[NDArray, NDArray, NDArray]:
+    """
+    Raster scan over the log-likelihood for different values of two parameters.
+
+    Args:
+        data: The data for which to calculate the log-likelihood.
+        pdf: The PDF. Should take arguments (data, par1, par2)
+        par1_range: The range over which we scan for the first parameter.
+        par2_range: The range over which we scan for the first parameter.
+        N: Number of values to scan over for each parameter.
+    
+    Return:
+        par1_mesh: A 2D mesh of par1 values.
+        par2_mesh: A 2D mesh of par2 values.
+        llh_pdf_mesh: The maximum log-likelihood.
+        max_llh_par1: Maximum likelihood estimate of par1.
+        max_llh_par2: Maximum likelihood estimate of par2.
+    """
+    par1_values = np.linspace(*par1_range, N)
+    par2_values = np.linspace(*par2_range, N)
+    par1_mesh, par2_mesh = np.meshgrid(par1_values, par2_values)
+    pdf_mesh = pdf(
+        data.reshape(1, -1),
+        par1_mesh.reshape(-1, 1),
+        par2_mesh.reshape(-1, 1),
+    )
+    llh_pdf_mesh = np.sum(np.log(pdf_mesh), axis=1).reshape(N, N)
+    max_llh_idx = np.argmax(llh_pdf_mesh.ravel())
+    max_llh_par1 = par1_mesh.ravel()[max_llh_idx]
+    max_llh_par2 = par2_mesh.ravel()[max_llh_idx]
+    return par1_mesh, par2_mesh, llh_pdf_mesh, max_llh_par1, max_llh_par2
