@@ -15,7 +15,7 @@ def normalize_pdf_1d(
     lower: float,
     upper: float,
 ) -> Callable[..., NDArray]:
-    """Get the function that normalizes a PDF.
+    """Convert a function into a normalized PDF.
 
     Args:
         pdf: The non-normalized function we want to use as a PDF.
@@ -23,7 +23,7 @@ def normalize_pdf_1d(
         upper: Upper bound on the domain of the pdf.
 
     Return:
-        norm_func: Function for calculating the normalization constant.
+        norm_pdf_func: Normalized PDF.
     """
     # Get list of parameters that the pdf takes.
     pdf_params = list(inspect.signature(pdf).parameters.keys())
