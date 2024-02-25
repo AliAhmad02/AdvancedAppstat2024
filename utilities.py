@@ -17,6 +17,9 @@ def normalize_pdf_1d(
 ) -> Callable[..., NDArray]:
     """Convert a function into a normalized PDF.
 
+    Assumes that the function "pdf" takes in the independent
+    variable as the first parameter.
+
     Args:
         pdf: The non-normalized function we want to use as a PDF.
         lower: Lower bound on the domain of the pdf.
