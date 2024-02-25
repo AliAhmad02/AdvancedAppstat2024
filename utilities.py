@@ -87,7 +87,7 @@ def raster_scan_llh_2d(
     return par1_mesh, par2_mesh, llh_pdf_mesh, max_llh_par1, max_llh_par2
 
 
-def boostrap_llh(
+def bootstrap_llh(
     data: NDArray,
     pdf: Callable[..., NDArray],
     lower: float,
