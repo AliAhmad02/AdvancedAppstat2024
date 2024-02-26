@@ -237,8 +237,11 @@ def multiple_crabs_walk_ten_surviving(xs_start, ys_start, max_step_size, radius)
 N_surviving_crabs = []
 largest_masses = []
 days_until_ten_surviving = []
+N_experiments1 = 2000
 
-for i in range(N_experiments):
+for i in range(N_experiments1):
+    if i % 100 == 0:
+        print(f"Iteration {i}")
     surviving_crabs, surviving_crabs_masses = multiple_crabs_walk(
         crab_positions_x, crab_positions_y, max_step_size, N_days, radius
     )
@@ -250,7 +253,7 @@ for i in range(N_experiments):
     N_surviving_crabs.append(len(surviving_crabs))
     largest_masses.append(np.max(surviving_crabs_masses))
 
-xmin_surviving_crabs = 3
+xmin_surviving_crabs = 2
 xmax_surviving_crabs = 16
 n_bins_surviving_crabs = xmax_surviving_crabs - xmin_surviving_crabs + 1
 
@@ -258,9 +261,9 @@ xmin_largest_masses = 2
 xmax_largest_masses = 14
 n_bins_largest_masses = xmax_largest_masses - xmin_largest_masses + 1
 
-xmin_days = 40
-xmax_days = 300
-n_bins_days = 40
+xmin_days = 15
+xmax_days = 420
+n_bins_days = 50
 
 onesig_lower_pct = (100 - 68.27) / 2
 onesig_upper_pct = 100 - onesig_lower_pct
