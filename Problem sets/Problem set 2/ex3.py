@@ -139,7 +139,7 @@ def multiple_crabs_walk(xs_start, ys_start, max_step_size, N_days, radius):
         # it is the distance between a point and itself. Therefore, since we are
         # only interested, uniquely, in the distance between every pair of points, we
         # only consider the triangular part of the matrix above the main diagonal.
-        # The below returns a tuple of two arrays, the first array containing the
+        # np.triu_indices returns a tuple of two arrays, the first array containing the
         # row-indices of the elements in the upper triangle and the second containing
         # the column-indices of the elements in the upper triangle of the matrix.
         unique_dist_indices = np.vstack(np.triu_indices(len(points_2d_arr), k=1)).T
