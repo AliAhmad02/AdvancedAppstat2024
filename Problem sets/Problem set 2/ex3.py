@@ -112,53 +112,86 @@ crab_positions_x, crab_positions_y = pd.read_csv(
 ).T.values
 
 
+def update_crabs_positions(xs, ys, max_step_size, radius):
+    N_crabs = len(xs)
+    rand_angles = np.random.uniform(0, 2 * np.pi, N_crabs)
+    dists_rand_angles = get_distance_to_border(xs, ys, rand_angles, radius)
+    mask_max = dists_rand_angles > max_step_size
+    # Update positions where we take the maximum step size
+    xs[mask_max] += max_step_size * np.cos(rand_angles[mask_max])
+    ys[mask_max] += max_step_size * np.sin(rand_angles[mask_max])
+    # Update positions where we take the step size that brings us to the border
+    xs[~mask_max] += dists_rand_angles[~mask_max] * np.cos(rand_angles[~mask_max])
+    ys[~mask_max] += dists_rand_angles[~mask_max] * np.sin(rand_angles[~mask_max])
+    return xs, ys
+
+
+def get_crabs_within_battle_distance(xs, ys, battle_dist):
+    # Create an array where each point is a pair of x-y coordinates
+    points_2d_arr = np.vstack((xs, ys)).T
+    # Create a matrix with all possible distances calculated
+    distances = distance_matrix(points_2d_arr, points_2d_arr)
+    # The above matrix has each distance twice, i.e. the distance at index i,j is
+    # the same as j,i. Additionally, the diagonal of the matrix is just zero, as
+    # it is the distance between a point and itself. Therefore, since we are
+    # only interested, uniquely, in the distance between every pair of points, we
+    # only consider the triangular part of the matrix above the main diagonal.
+    # np.triu_indices returns a tuple of two arrays, the first array containing the
+    # row-indices of the elements in the upper triangle and the second containing
+    # the column-indices of the elements in the upper triangle of the matrix.
+    unique_dist_indices = np.vstack(np.triu_indices(len(points_2d_arr), k=1)).T
+    # Get a list of distances between each point (unique)
+    distances_unique = distances[unique_dist_indices[:, 0], unique_dist_indices[:, 1]]
+    # Get the indices that sort the above distance array. We are interested in
+    # this because we want the battles to happen in order of smallest distance
+    distances_unique_sort_indices = np.argsort(distances_unique)
+    # Sort the indices of all unique pairs according to distance
+    unique_dist_indices = unique_dist_indices[distances_unique_sort_indices]
+    # Create a boolean mask of the distances that are within battle distance
+    battle_range_mask = distances_unique <= battle_dist
+    return battle_range_mask, unique_dist_indices
+
+
+def simulate_crab_battle(battle_pair, crab_masses):
+    # if the two crabs have the same mass, arbitrarily assign them big/small
+    if crab_masses[battle_pair[0]] == crab_masses[battle_pair[1]]:
+        crab_big = battle_pair[0]
+        crab_small = battle_pair[1]
+    # else assign big/small status according to the mass
+    else:
+        crab_big = battle_pair[np.argmax(crab_masses[battle_pair])]
+        crab_small = battle_pair[np.argmin(crab_masses[battle_pair])]
+    # Get the mass of the two crabs
+    crab_big_mass = crab_masses[crab_big]
+    crab_small_mass = crab_masses[crab_small]
+    # Calculate the probability that the small crab gets eaten
+    prob_eat = crab_big_mass**2 / (crab_big_mass**2 + crab_small_mass**2)
+    # Simulate the crab being eaten with the given probability
+    rand_uniform = np.random.uniform(0, 1)
+    if prob_eat >= rand_uniform:
+        crab_masses[crab_big] += crab_masses[crab_small]
+        crab_masses[crab_small] = 0
+    return crab_masses
+
+
 def multiple_crabs_walk(xs_start, ys_start, max_step_size, N_days, radius):
     xs = xs_start
     ys = ys_start
     crab_masses = np.ones(len(xs))
     battle_dist = 0.175
-    N_crabs = len(xs)
     for i in range(N_days):
         if crab_masses.sum() != len(xs):
             raise ValueError("Crab masses must sum to 20 kg")
-        rand_angles = np.random.uniform(0, 2 * np.pi, N_crabs)
-        dists_rand_angles = get_distance_to_border(xs, ys, rand_angles, radius)
-        mask_max = dists_rand_angles > max_step_size
-        # Update positions where we take the maximum step size
-        xs[mask_max] += max_step_size * np.cos(rand_angles[mask_max])
-        ys[mask_max] += max_step_size * np.sin(rand_angles[mask_max])
-        # Update positions where we take the step size that brings us to the border
-        xs[~mask_max] += dists_rand_angles[~mask_max] * np.cos(rand_angles[~mask_max])
-        ys[~mask_max] += dists_rand_angles[~mask_max] * np.sin(rand_angles[~mask_max])
-        # Create an array where each point is a pair of x-y coordinates
-        points_2d_arr = np.vstack((xs, ys)).T
-        # Create a matrix with all possible distances calculated
-        distances = distance_matrix(points_2d_arr, points_2d_arr)
-        # The above matrix has each distance twice, i.e. the distance at index i,j is
-        # the same as j,i. Additionally, the diagonal of the matrix is just zero, as
-        # it is the distance between a point and itself. Therefore, since we are
-        # only interested, uniquely, in the distance between every pair of points, we
-        # only consider the triangular part of the matrix above the main diagonal.
-        # np.triu_indices returns a tuple of two arrays, the first array containing the
-        # row-indices of the elements in the upper triangle and the second containing
-        # the column-indices of the elements in the upper triangle of the matrix.
-        unique_dist_indices = np.vstack(np.triu_indices(len(points_2d_arr), k=1)).T
-        # Get a list of distances between each point (unique)
-        distances_unique = distances[
-            unique_dist_indices[:, 0], unique_dist_indices[:, 1]
-        ]
-        # Get the indices that sort the above distance array. We are interested in
-        # this because we want the battles to happen in order of smallest distance
-        distances_unique_sort_indices = np.argsort(distances_unique)
-        # Sort the indices of all unique pairs according to distance
-        unique_dist_indices = unique_dist_indices[distances_unique_sort_indices]
-        # Create a boolean mask of the distances that are within battle distance
-        battle_range_mask = distances_unique <= battle_dist
+        xs, ys = update_crabs_positions(xs, ys, max_step_size, radius)
+        battle_range_mask, unique_dist_indices = get_crabs_within_battle_distance(
+            xs, ys, battle_dist
+        )
         # Move on to the next iteration if no crabs are in battle range
         if battle_range_mask.sum() == 0:
             continue
         # Get the indices of the crabs which are within battle distance of each other
         indices_battle_range = unique_dist_indices[battle_range_mask]
+        # Loop all all two-crab battles
         for battle_pair in indices_battle_range:
             # Since we do not remove eaten crabs from our xs and ys arrays,
             # they will still show up in the indices_battle_range array. Thus,
@@ -167,36 +200,52 @@ def multiple_crabs_walk(xs_start, ys_start, max_step_size, N_days, radius):
             # And we check if they are already eaten by checking if the mass is zero.
             if (crab_masses[battle_pair] == 0).any():
                 continue
-            # if the two crabs have the same mass, arbitrarily assign them big/small
-            if crab_masses[battle_pair[0]] == crab_masses[battle_pair[1]]:
-                crab_big = battle_pair[0]
-                crab_small = battle_pair[1]
-            # else assign big/small status according to the mass
-            else:
-                crab_big = battle_pair[np.argmax(crab_masses[battle_pair])]
-                crab_small = battle_pair[np.argmin(crab_masses[battle_pair])]
-            # Get the mass of the two crabs
-            crab_big_mass = crab_masses[crab_big]
-            crab_small_mass = crab_masses[crab_small]
-            # Calculate the probability that the small crab gets eaten
-            prob_eat = crab_big_mass**2 / (crab_big_mass**2 + crab_small_mass**2)
-            # Simulate the crab being eaten with the given probability
-            rand_uniform = np.random.uniform(0, 1)
-            if prob_eat >= rand_uniform:
-                crab_masses[crab_big] += crab_masses[crab_small]
-                crab_masses[crab_small] = 0
-    # Save an array of surviving crabs and one of the masses
-    surviving_crabs = np.arange(N_crabs)[crab_masses != 0]
+            crab_masses = simulate_crab_battle(battle_pair, crab_masses)
+    surviving_crabs = np.arange(len(xs))[crab_masses != 0]
     surviving_crabs_masses = crab_masses[surviving_crabs]
     return surviving_crabs, surviving_crabs_masses
 
 
+def multiple_crabs_walk_ten_surviving(xs_start, ys_start, max_step_size, radius):
+    xs = xs_start
+    ys = ys_start
+    crab_masses = np.ones(len(xs))
+    battle_dist = 0.175
+    days = 0
+    n_surviving_crabs = len(xs)
+    while n_surviving_crabs > 10:
+        days += 1
+        if crab_masses.sum() != len(xs):
+            raise ValueError("Crab masses must sum to 20 kg")
+        xs, ys = update_crabs_positions(xs, ys, max_step_size, radius)
+        battle_range_mask, unique_dist_indices = get_crabs_within_battle_distance(
+            xs, ys, battle_dist
+        )
+        if battle_range_mask.sum() == 0:
+            continue
+        indices_battle_range = unique_dist_indices[battle_range_mask]
+        for battle_pair in indices_battle_range:
+            if (crab_masses[battle_pair] == 0).any():
+                continue
+            crab_masses = simulate_crab_battle(battle_pair, crab_masses)
+            n_surviving_crabs = len(crab_masses[crab_masses != 0])
+            if n_surviving_crabs == 10:
+                break
+    return days
+
+
 N_surviving_crabs = []
 largest_masses = []
+days_until_ten_surviving = []
 
 for i in range(N_experiments):
     surviving_crabs, surviving_crabs_masses = multiple_crabs_walk(
         crab_positions_x, crab_positions_y, max_step_size, N_days, radius
+    )
+    days_until_ten_surviving.append(
+        multiple_crabs_walk_ten_surviving(
+            crab_positions_x, crab_positions_y, max_step_size, radius
+        )
     )
     N_surviving_crabs.append(len(surviving_crabs))
     largest_masses.append(np.max(surviving_crabs_masses))
@@ -209,6 +258,15 @@ xmin_largest_masses = 2
 xmax_largest_masses = 14
 n_bins_largest_masses = xmax_largest_masses - xmin_largest_masses + 1
 
+xmin_days = 40
+xmax_days = 300
+n_bins_days = 40
+
+onesig_lower_pct = (100 - 68.27) / 2
+onesig_upper_pct = 100 - onesig_lower_pct
+onesig_ci_lower_days = np.percentile(days_until_ten_surviving, onesig_lower_pct)
+onesig_ci_upper_days = np.percentile(days_until_ten_surviving, onesig_upper_pct)
+
 fig, ax = plt.subplots(1, 1, figsize=(6, 4))
 ax.hist(
     N_surviving_crabs,
@@ -216,6 +274,7 @@ ax.hist(
     color="hotpink",
     range=(xmin_surviving_crabs - 0.5, xmax_surviving_crabs + 0.5),
 )
+ax.set_xticks(np.arange(xmin_surviving_crabs, xmax_surviving_crabs + 1))
 ax.set_xlabel("Number of surviving crabs", fontsize=15)
 ax.set_ylabel("Frequency", fontsize=15)
 plt.show()
@@ -227,6 +286,27 @@ ax.hist(
     color="hotpink",
     range=(xmin_largest_masses - 0.5, xmax_largest_masses + 0.5),
 )
+ax.set_xticks(np.arange(xmin_largest_masses, xmax_largest_masses + 1))
 ax.set_xlabel("Largest surviving crab mass [kg]", fontsize=15)
 ax.set_ylabel("Frequency", fontsize=15)
+plt.show()
+
+fig, ax = plt.subplots(1, 1, figsize=(8, 4))
+ax.hist(
+    days_until_ten_surviving,
+    bins=n_bins_days,
+    color="hotpink",
+    range=(xmin_days - 0.5, xmax_days + 0.5),
+    label="Histogram",
+)
+ax.axvspan(
+    onesig_ci_lower_days,
+    onesig_ci_upper_days,
+    color="black",
+    alpha=0.2,
+    label=f"$1\sigma$ CI [{onesig_ci_lower_days:.1f}, {onesig_ci_upper_days:.1f}]",
+)
+ax.set_xlabel("Days until 10 surviving crabs", fontsize=15)
+ax.set_ylabel("Frequency", fontsize=15)
+ax.legend(frameon=False, fontsize=13)
 plt.show()
