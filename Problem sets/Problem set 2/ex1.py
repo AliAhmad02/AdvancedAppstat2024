@@ -3,6 +3,10 @@ import numpy as np
 import pandas as pd
 from iminuit import Minuit
 from iminuit.cost import UnbinnedNLL
+import sys
+
+sys.path.append("../AdvancedAppstat")
+from utilities import num_to_latex_str, num_err_to_latex_str
 
 # Requires scienceplots style installation
 import scienceplots
@@ -13,7 +17,7 @@ plt.style.use(["science"])
 def neutrino_pdf_norm(E, M):
     T = 1.0 * 1.057e13 / M
     # The normalization from 0 to infinity
-    norm = 1 / (-T * (-2 * np.log(4) / 3 + np.log(2)))
+    norm = 1 / (T * np.log(2) / 3)
     f = norm * (np.exp(E / T) - 1) / ((np.exp(E / T) + 3) * (np.exp(E / T) + 1))
     return f
 
@@ -23,7 +27,7 @@ m2 = 4e11
 m3 = 9e11
 
 neutrino_lin_min = 0
-neutrino_lin_max = 400
+neutrino_lin_max = 250
 neutrino_lin_N = 10_000
 
 neutrino_lin = np.linspace(neutrino_lin_min, neutrino_lin_max, neutrino_lin_N)
@@ -32,14 +36,22 @@ pdf_m2 = neutrino_pdf_norm(neutrino_lin, m2)
 pdf_m3 = neutrino_pdf_norm(neutrino_lin, m3)
 
 fig, ax = plt.subplots(1, 1, figsize=(6, 4))
-ax.plot(neutrino_lin, pdf_m1, label=f"PDF for Black hole mass {m1:.2e}g", color="aqua")
 ax.plot(
-    neutrino_lin, pdf_m2, label=f"PDF for Black hole mass {m2:.2e}g", color="dodgerblue"
+    neutrino_lin,
+    pdf_m1,
+    label=rf"PDF for Black hole mass {num_to_latex_str(m1, 2)}g",
+    color="aqua",
+)
+ax.plot(
+    neutrino_lin,
+    pdf_m2,
+    label=rf"PDF for Black hole mass {num_to_latex_str(m2, 2)}g",
+    color="dodgerblue",
 )
 ax.plot(
     neutrino_lin,
     pdf_m3,
-    label=f"PDF for Black hole mass {m3:.2e}g",
+    label=rf"PDF for Black hole mass {num_to_latex_str(m3, 2)}g",
     color="midnightblue",
 )
 ax.set_xlabel("Neutrino Energy [GeV]", fontsize=15)
@@ -59,21 +71,29 @@ ax.hist(
     histtype="step",
     label="Simulated data",
 )
-ax.plot(neutrino_lin, pdf_m1, label=f"PDF for Black hole mass {m1:.2e}g", color="aqua")
 ax.plot(
-    neutrino_lin, pdf_m2, label=f"PDF for Black hole mass {m2:.2e}g", color="dodgerblue"
+    neutrino_lin,
+    pdf_m1,
+    label=rf"PDF for Black hole mass {num_to_latex_str(m1, 2)}g",
+    color="aqua",
+)
+ax.plot(
+    neutrino_lin,
+    pdf_m2,
+    label=rf"PDF for Black hole mass {num_to_latex_str(m2, 2)}g",
+    color="dodgerblue",
 )
 ax.plot(
     neutrino_lin,
     pdf_m3,
-    label=f"PDF for Black hole mass {m3:.2e}g",
+    label=rf"PDF for Black hole mass {num_to_latex_str(m3, 2)}g",
     color="midnightblue",
 )
 ax.set_xlabel("Neutrino Energy [GeV]", fontsize=15)
 ax.set_ylabel("Probability", fontsize=15)
 plt.legend(frameon=False, fontsize=13)
 plt.show()
-print("\nEyeball guess for neutrino mass, around 7e+11g")
+print("\nEyeball guess for neutrino mass, around 6e+11g")
 
 N_raster = 10_000
 bh_mass_raster_lin = np.linspace(m2, m3, N_raster)
@@ -106,7 +126,7 @@ ax.axvline(mass_raster_max_llh, lw=1.5, color="black", linestyle="dashed")
 ax.text(
     0.45,
     0.2,
-    rf"$M_{{BH}}[\ln({{\mathcal{{L}}}}_{{max}})\sim{llh_mass_raster_max_val:.1f}]$=({mass_raster_max_llh/1e11:.2f}$\pm${mass_raster_max_llh_err_left/1e11:.2f})$ \times 10^{{11}} \ g$",
+    rf"$\hat{{M}}_{{BH}}[\ln({{\mathcal{{L}}}}_{{max}})\sim{llh_mass_raster_max_val:.1f}]$={num_err_to_latex_str(mass_raster_max_llh, mass_raster_max_llh_err_left, 2)} g",
     transform=ax.transAxes,
     va="center",
     ha="center",
