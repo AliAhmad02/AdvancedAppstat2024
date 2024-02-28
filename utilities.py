@@ -1,4 +1,4 @@
-"""General functions useful for solving problems in the course."""
+"""General functions useful in the course."""
 
 import pandas as pd
 import numpy as np
@@ -8,6 +8,48 @@ import inspect
 from sympy import symbols, integrate, lambdify
 from iminuit import Minuit
 from iminuit.cost import UnbinnedNLL
+
+
+def num_to_latex_str(number: float, n_decimals: int) -> str:
+    """Take in a large/small number that should be written
+    in scientific notation and format it as a latex-string.
+
+    For example, 3.55e+7 will be written as $3.55 \times 10^{7}$.
+
+    Args:
+        number: Number to be formatted.
+        n_decimals: Number of decimals to format the number with.
+
+    Return:
+        latex_string: The formatted latex-string.
+    """
+    power_of_ten: int = int(np.floor(np.log10(np.abs(number))))
+    num_no_power: float = number / (10**power_of_ten)
+    latex_string: str = rf"${num_no_power:.{n_decimals}f} \times 10^{{{power_of_ten}}}$"
+    return latex_string
+
+
+def num_err_to_latex_str(number: float, err: float, n_decimals: int) -> str:
+    """Take a large/small number (including its error) that should be written
+    in scientific notation and format it as a latex-string.
+
+    For example, 3.55e+7±0.05e+7 will be written as $(3.55±0.05)\times 10^{7}$.
+
+    Args:
+        number: Number to be formatted.
+        err: The error on the number.
+        n_decimals: Number of decimals to format the number/error with.
+
+    Return:
+        latex_string: The formatted latex-string.
+    """
+    power_of_ten: int = int(np.floor(np.log10(np.abs(number))))
+    num_no_power: float = number / (10**power_of_ten)
+    err_no_power: float = err / (10**power_of_ten)
+    latex_string: str = (
+        rf"$({num_no_power:.{n_decimals}f} \pm {err_no_power:.{n_decimals}f})\times 10^{{{power_of_ten}}}$"
+    )
+    return latex_string
 
 
 def normalize_pdf_1d(
