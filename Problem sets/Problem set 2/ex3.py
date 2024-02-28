@@ -1,3 +1,8 @@
+"""
+Note: The code for the simulation(s) of multiple crabs was brainstormed
+and developed in heavy collaboration with Florent Mustafaj and thus, the
+implementations might be quite similar.
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
