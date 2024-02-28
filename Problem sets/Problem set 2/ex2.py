@@ -31,16 +31,16 @@ prior = np.piecewise(
 alpha = 2
 beta = 2
 likelihood = gamma.pdf(x, a=alpha, scale=1 / beta)
-posterior = prior * likelihood
+posterior = prior * likelihood / np.trapz(prior * likelihood, x=x)
 
 fig, ax = plt.subplots(1, 1, figsize=(6, 4))
-ax.plot(x, prior, label=f"Prior", color="aqua")
-ax.plot(x, likelihood, label=f"Likelihood", color="dodgerblue")
+ax.plot(x, prior, label=f"Prior", color="black")
+ax.plot(x, likelihood, label=f"Likelihood", color="darkred")
 ax.plot(
     x,
     posterior,
     label=f"Posterior",
-    color="midnightblue",
+    color="deeppink",
 )
 ax.set_xlabel("x", fontsize=15)
 ax.set_ylabel("Probability", fontsize=15)
@@ -51,4 +51,4 @@ max_posterior_idx = np.argmax(posterior)
 max_posterior_x = x[max_posterior_idx]
 max_posterior_val = posterior[max_posterior_idx]
 
-print(f"\nThe most like estimate is P(x={max_posterior_x:.2f})={max_posterior_val:.2f}")
+print(f"\nThe most like estimate is g(x={max_posterior_x:.2f})={max_posterior_val:.2f}")
