@@ -151,12 +151,6 @@ ax.set_xlabel("Frequency", fontsize=15)
 ax.legend(fontsize=15, frameon=False)
 plt.show()
 
-# feature_importances = pd.DataFrame(
-#     data=bst.feature_importances_,
-#     index=train_test_df.iloc[:, :-1].columns,
-#     columns=["Importance"],
-# ).sort_values("Importance", ascending=True)
-# feature_importances.plot(kind="barh", figsize=(10, 6), color="black")
 plot_importance(bst)
 plt.show()
 
