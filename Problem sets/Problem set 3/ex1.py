@@ -106,13 +106,13 @@ ax.plot(
     prob_thresholds,
     high_earner_fracs * 100,
     label="High earners",
-    color="red",
+    color="black",
 )
 ax.plot(
     prob_thresholds,
     low_earner_fracs * 100,
     label="Low earners",
-    color="blue",
+    color="red",
 )
 ax.axvline(
     prob_cutoff_val,
@@ -138,20 +138,20 @@ probs_low_earners = prob_test[y_test == 0]
 fig, ax = plt.subplots(1, 1, figsize=(6, 4))
 ax.hist(
     probs_high_earners[:500],
-    bins=100,
+    bins=40,
     color="black",
     histtype="step",
     label="High earners",
 )
 ax.hist(
-    probs_low_earners[:500], bins=100, color="red", histtype="step", label="Low earners"
+    probs_low_earners[:500], bins=40, color="red", histtype="step", label="Low earners"
 )
 ax.set_xlabel("Probability", fontsize=15)
-ax.set_xlabel("Frequency", fontsize=15)
+ax.set_ylabel("Frequency", fontsize=15)
 ax.legend(fontsize=15, frameon=False)
 plt.show()
 
-plot_importance(bst)
+plot_importance(bst, grid=False)
 plt.show()
 
 real_prob = bst.predict_proba(real_df.iloc[:, 1:])[:, 1]
@@ -161,11 +161,11 @@ np.savetxt(
     "AdvancedAppstat/Problem sets/Problem set 3/data_files/ali_ahmad_low_ID.txt",
     low_earner_ids_real.astype("int"),
     delimiter="\n",
-    fmt="%.0f"
+    fmt="%.0f",
 )
 np.savetxt(
     "AdvancedAppstat/Problem sets/Problem set 3/data_files/ali_ahmad_high_ID.txt",
     high_earner_ids_real.astype("int"),
     delimiter="\n",
-    fmt="%.0f"
+    fmt="%.0f",
 )

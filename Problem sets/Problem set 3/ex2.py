@@ -2,9 +2,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import scienceplots
-from datetime import datetime
 import sympy as sy
 from sklearn.neighbors import KernelDensity
+from datetime import datetime
 
 plt.style.use("science")
 
@@ -18,8 +18,8 @@ fig, ax = plt.subplots(1, 1, figsize=(6, 4))
 ax.plot(
     crash_df["lon"].values, crash_df["lat"].values, ".", markersize=5, color="black"
 )
-ax.set_xlabel("Longitude (decimal degrees)")
-ax.set_ylabel("Latitude (decimal degrees)")
+ax.set_xlabel("Longitude (decimal degrees)", fontsize=15)
+ax.set_ylabel("Latitude (decimal degrees)", fontsize=15)
 plt.show()
 
 fig, ax = plt.subplots(1, 1, figsize=(6, 4))
@@ -59,7 +59,7 @@ times_linspace = pd.date_range(
 crash_times_dt = pd.to_datetime(
     np.char.add("01-01-2024 ", crash_times.values.astype("str"))
 )
-times_linspace_num = np.linspace(0, 24 - 1 / 60, len(times_linspace))
+times_linspace_num = np.linspace(0, 24, len(times_linspace))
 bw_epan = 0.8
 kernel_epan = EpanechnikovKernelTimeDiff(crash_times_dt, bw_epan)
 kernel_vals_lin = [kernel_epan(time) for time in times_linspace]
@@ -81,7 +81,7 @@ ax.set_xticks(range(0, 25))
 ax.legend(fontsize=15, frameon=False)
 plt.show()
 
-times_eval = [
+times_eval = pd.to_datetime([
     "01-01-2024 00:23:00",
     "01-01-2024 01:49:00",
     "01-01-2024 08:12:00",
@@ -89,7 +89,7 @@ times_eval = [
     "01-01-2024 18:02:00",
     "01-01-2024 21:12:00",
     "01-01-2024 23:44:00",
-]
+])
 prob_times_eval = kde_epan[times_linspace.isin(times_eval)]
 print(f"\nProbabilities at the suggested times: {prob_times_eval}")
 
@@ -163,4 +163,4 @@ lat_stacked = np.vstack([lat_mask] * len(long_lat_kde))
 long_stacked = np.column_stack([long_mask] * len(long_lat_kde))
 tot_mask = lat_stacked * long_stacked
 integral_2d = np.trapz(np.trapz(long_lat_kde * tot_mask, lat_mesh[0]), long_mesh[:, 0])
-print(f"\nArea inside box: {integral_2d:.2f}")
+print(f"\nPercentage of crashes inside box: {integral_2d*100:.2f}")
