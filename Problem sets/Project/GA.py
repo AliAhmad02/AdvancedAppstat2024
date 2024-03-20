@@ -163,27 +163,27 @@ n_generations_llh = 200
 p_mut_llh = 0.4
 n_elite_pairs_llh = 1
 data_with_noise = np.genfromtxt(
-    "AdvancedAppstat/Problem sets/Project/MC_data.txt", delimiter="\n"
+    "AdvancedAppstat/Problem sets/Project/Data Files/MC_data.txt", delimiter="\n"
 )
 nll_gauss_noise = UnbinnedNLL(data_with_noise, voigt_pdf1)
-# minuit_gauss_noise = Minuit(nll_gauss_noise, *generate_initial_population(bounds_lower_llh, bounds_upper_llh, 1)[0])
+minuit_gauss_noise = Minuit(nll_gauss_noise, *generate_initial_population(bounds_lower_llh, bounds_upper_llh, 1)[0])
 minuit_gauss_noise = Minuit(
     nll_gauss_noise, *[6.34996375e03, 6.34554601e-01, 9.46659796e01]
 )
-# minuit_gauss_noise.limits["lam_0"] = (5000, 7000)
-# minuit_gauss_noise.limits["gamma"] = (0, 3)
-# minuit_gauss_noise.limits["b"] = (10, 30)
+minuit_gauss_noise.limits["lam_0"] = (5000, 7000)
+minuit_gauss_noise.limits["gamma"] = (0, 3)
+minuit_gauss_noise.limits["b"] = (10, 30)
 minuit_gauss_noise.migrad()
 print(minuit_gauss_noise)
 print(-minuit_gauss_noise.fval)
 print(2 * np.sum(np.log(voigt_pdf1(data_with_noise, 6350, 1, 17))))
-# print(perform_evolution(
-#     bounds_lower_llh,
-#     bounds_upper_llh,
-#     n_pop_llh,
-#     n_generations_llh,
-#     fitness_llh,
-#     p_mut_llh,
-#     n_elite_pairs_llh,
-#     data=data_with_noise,
-# ))
+print(perform_evolution(
+    bounds_lower_llh,
+    bounds_upper_llh,
+    n_pop_llh,
+    n_generations_llh,
+    fitness_llh,
+    p_mut_llh,
+    n_elite_pairs_llh,
+    data=data_with_noise,
+))
