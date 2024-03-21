@@ -54,6 +54,7 @@ ax.hist(
 )
 ax.set_xlabel("$\lambda$ [Å]", fontsize=17)
 ax.set_ylabel("Flux [A.U.]", fontsize=17)
+ax.set_title("MC data with $\lambda_{{0}}=6350, \ \gamma=1, \ b=17$", fontsize=17)
 plt.savefig(
     "AdvancedAppstat/Problem sets/Project/Figures/MC_data.png",
     dpi=500,
