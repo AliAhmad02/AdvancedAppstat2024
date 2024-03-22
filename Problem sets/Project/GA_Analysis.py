@@ -100,7 +100,7 @@ ax.plot(
     label="First run",
 )
 # ax.plot(iteration_nums, true_params_llh - ga_iterations_extra, color="red", lw=1.5, label="Extra run")
-ax.set_xlabel("Iteration number", fontsize=17)
+ax.set_xlabel("Generation", fontsize=17)
 ax.set_ylabel(
     "$\ln{{\mathcal{{L}}_{{true}}}}-\ln{{\mathcal{{L}}_{{max}}}}$", fontsize=17
 )
